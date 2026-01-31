@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Battle Zone</title>
+<style>
+body { margin:0; background:#000; overflow:hidden; }
+canvas { display:block; margin:auto; background:#111; }
+#hud {
+ color:white;
+ position:absolute;
+ top:10px; left:10px;
+ font-family:Arial;
+}
+.health {
+ width:200px;
+ height:15px;
+ border:2px solid white;
+ margin-top:5px;
+}
+.health div {
+ height:100%;
+ background:red;
+}
+</style>
+</head>
+<body>
+
+<div id="hud">
+ Score: <span id="score">0</span>
+ <div class="health"><div id="hpbar"></div></div>
+</div>
+
+<canvas id="game" width="1000" height="550"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = { x:500, y:275, r:18, hp:100, speed:4 };
+let bullets = [];
+let enemies = [];
+let keys = {};
+let score = 0;
+
+document.addEventListener("keydown", e => keys[e.key]=true);
+document.addEventListener("keyup", e => keys[e.key]=false);
+
+canvas.addEventListener("click", e=>{
+ let rect = canvas.getBoundingClientRect();
+ let mx = e.clientX - rect.left;
+ let my = e.clientY - rect.top;
+ let angle = Math.atan2(my-player.y, mx-player.x);
+ bullets.push({
+   x:player.x,
+   y:player.y,
+   dx:Math.cos(angle)*9,
+   dy:Math.sin(angle)*9
+ });
+});
+
+function spawnEnemy(){
+ enemies.push({
+   x:Math.random()*1000,
+   y:Math.random()*550,
+   r:16,
+   speed:1.2
+ });
+}
+setInterval(spawnEnemy, 1000);
+
+function movePlayer(){
+ if(keys["w"]) player.y -= player.speed;
+ if(keys["s"]) player.y += player.speed;
+ if(keys["a"]) player.x -= player.speed;
+ if(keys["d"]) player.x += player.speed;
+}
+
+function draw(){
+ ctx.clearRect(0,0,1000,550);
+ movePlayer();
+
+ // player
+ ctx.fillStyle="cyan";
+ ctx.beginPath();
+ ctx.arc(player.x,player.y,player.r,0,Math.PI*2);
+ ctx.fill();
+
+ // bullets
+ ctx.fillStyle="yellow";
+ bullets.forEach(b=>{
+   b.x += b.dx;
+   b.y += b.dy;
+   ctx.fillRect(b.x,b.y,4,4);
+ });
+
+ // enemies
+ ctx.fillStyle="orange";
+ enemies.forEach(e=>{
+   let a = Math.atan2(player.y-e.y, player.x-e.x);
+   e.x += Math.cos(a)*e.speed;
+   e.y += Math.sin(a)*e.speed;
+   ctx.beginPath();
+   ctx.arc(e.x,e.y,e.r
